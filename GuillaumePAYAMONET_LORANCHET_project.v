@@ -134,7 +134,15 @@ Lemma correctness (env : list prop) (p : prop) :
 Proof.
 induction 1; simpl; auto; move => v.
 
-unfold sat. move => h1. case h: (sem v p); simpl; auto.
+unfold sat. move => h1. case h: (sem v p); simpl; auto. specialize (IHnd v). apply IHnd. move => q1 q2.
+case q2. move => h2. rewrite -h2. unfold sat. simpl. rewrite h. simpl. trivial. move => h2. unfold sat. apply h1. apply h2. 
+
+move => h0. unfold sat. simpl. unfold sat in IHnd1. specialize (IHnd1 v).
+specialize (IHnd2 v). rewrite IHnd1. auto. rewrite IHnd2. auto. trivial. 
+
+move => h0. unfold sat. simpl. unfold sat in IHnd. specialize (IHnd v). rewrite IHnd. auto. auto.
+
+move => h0. unfold sat. simpl. unfold sat in IHnd. specialize (IHnd v); rewrite IHnd; case h: (sem v p); auto.
 Admitted.
 
 
@@ -304,8 +312,7 @@ Proof.
 induction p.
 move => prop v. unfold nifsem. case val_v: v; auto.
 move => H v. unfold nifsem. case val_b: b; auto; rewrite val_b in H. done.
-
-Qed.
+Admitted.
 
 (* -------------------------------------------------------------------- *)
 (* ...and its completness.                                              *)
