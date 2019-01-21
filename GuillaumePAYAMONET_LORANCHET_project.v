@@ -134,7 +134,8 @@ Lemma correctness (env : list prop) (p : prop) :
 Proof.
 induction 1; simpl; auto; move => v.
 
-unfold sat. move => v. case h: (sem v p); simpl; auto. gcgfhs
+unfold sat. move => h1. case h: (sem v p); simpl; auto.
+Admitted.
 
 
 (*
@@ -244,7 +245,8 @@ end.
 
 Lemma normif_correct (v : valuation) (c t f : nifForm) :
   nifsem v (normif c t f) = if nifsem v c then nifsem v t else nifsem v f.
-Proof. elim c; simpl; auto. 
+Proof.
+induction c. 
 Admitted.
 
 
@@ -288,13 +290,16 @@ Lemma nifForm_tauto_r_correct (xv : nat -> option bool) (p : nifForm) :
 Proof.
 elim p; simpl; auto. 
 intuition. 
-Qed.
+Admitted.
 
 (* -------------------------------------------------------------------- *)
 Lemma nifForm_tauto_correct (p : nifForm) :
   nifForm_tauto p = true -> forall v, nifsem v p = true.
 Proof.
-...
+induction p.
+move => prop v. unfold nifsem. case val_v: v; auto.
+move => H v. unfold nifsem. case val_b: b; auto; rewrite val_b in H. done.
+
 Qed.
 
 (* -------------------------------------------------------------------- *)
