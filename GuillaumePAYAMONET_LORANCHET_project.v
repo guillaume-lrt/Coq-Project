@@ -134,15 +134,7 @@ Lemma correctness (env : list prop) (p : prop) :
 Proof.
 induction 1; simpl; auto; move => v.
 
-unfold sat. move => h1. case h: (sem v p); simpl; auto. specialize (IHnd v). apply IHnd. move => q1 q2.
-case q2. move => h2. rewrite -h2. unfold sat. simpl. rewrite h. simpl. trivial. move => h2. unfold sat. apply h1. apply h2. 
-
-move => h0. unfold sat. simpl. unfold sat in IHnd1. specialize (IHnd1 v).
-specialize (IHnd2 v). rewrite IHnd1. auto. rewrite IHnd2. auto. trivial. 
-
-move => h0. unfold sat. simpl. unfold sat in IHnd. specialize (IHnd v). rewrite IHnd. auto. auto.
-
-move => h0. unfold sat. simpl. unfold sat in IHnd. specialize (IHnd v); rewrite IHnd; case h: (sem v p); auto.
+unfold sat. move => h1. case h: (sem v p); simpl; auto.
 Admitted.
 
 
@@ -254,14 +246,19 @@ end.
 Lemma normif_correct (v : valuation) (c t f : nifForm) :
   nifsem v (normif c t f) = if nifsem v c then nifsem v t else nifsem v f.
 Proof.
-induction c. 
-Admitted.
+elim c; simpl; auto. 
+move => b. case b; auto.
+induction n. move => a b e d. case v. auto. auto.
+move => a b e d. case v; auto.
+Qed.
 
 
 (* -------------------------------------------------------------------- *)
 Lemma norm_correct (v : valuation) (p : ifForm) : nifsem v (norm p) = ifsem v p.
 Proof.
-Admitted.
+induction p. simpl. auto. 
+case b; auto. rewrite normif_correct IHp1 IHp2 IHp3; auto.
+Qed.
 
 
 (* -------------------------------------------------------------------- *)
