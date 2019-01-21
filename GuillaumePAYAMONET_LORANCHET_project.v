@@ -132,9 +132,10 @@ Qed.
 Lemma correctness (env : list prop) (p : prop) :
   nd env p -> forall v, (forall q, In q env -> sat v q) -> sat v p.
 Proof.
-induction p.
-move => a b c.
-Admitted.
+induction 1; simpl; auto; move => v.
+
+unfold sat. move => v. case h: (sem v p); simpl; auto. gcgfhs
+
 
 (*
 move => h1 h2 h3.
@@ -193,7 +194,9 @@ Proof.
 induction p.
 simpl. trivial.
 simpl. trivial.
-simpl. rewrite IHp1. rewrite IHp2. 
+simpl. rewrite IHp1. rewrite IHp2. auto. 
+simpl. rewrite IHp1. rewrite IHp2. auto. 
+simpl. rewrite IHp1. rewrite IHp2. auto. 
 Qed.
 
 (* -------------------------------------------------------------------- *)
@@ -210,32 +213,46 @@ Inductive nifForm : Type :=
 (* Define the semantic of the assertions of type [nifForm].             *)
 
 Fixpoint nifsem (v : valuation) (p : nifForm) : bool :=
-  ...
+  match p with 
+  |PNIVar n => v n
+  |PNIConst true => true 
+  |PNIConst false => false 
+  |PNIIf n p2 p3 => if v n then nifsem v p2 else nifsem v p3
+end.
 
 (* -------------------------------------------------------------------- *)
 (* Write below the normalization function for assertions of type        *
  * [ifForm], obtaining assertions of type [nifForm].                    *)
 
 Fixpoint normif (c t f : nifForm) {struct c} :=
-  ...
+  match c with 
+  |PNIVar n => PNIIf n t f
+  |PNIConst true => t
+  |PNIConst false => f
+  |PNIIf n p2 p3 => PNIIf n (normif p2 t f) (normif p3 t f)
+end.
 
 Fixpoint norm (p : ifForm) : nifForm :=
-  ...
+  match p with 
+  |PIVar p => PNIVar p 
+  |PIConst b => PNIConst b
+  |PIIf p p1 p2 => normif (norm p)(norm p1)(norm p2)
+end.
 
 (* -------------------------------------------------------------------- *)
 (* Show that the normalization functions are correct w.r.t. [nifsem].   *)
 
 Lemma normif_correct (v : valuation) (c t f : nifForm) :
   nifsem v (normif c t f) = if nifsem v c then nifsem v t else nifsem v f.
-Proof. elim c; simpl; auto.
-...
-Qed.
+Proof. elim c; simpl; auto. 
+Admitted.
+
 
 (* -------------------------------------------------------------------- *)
 Lemma norm_correct (v : valuation) (p : ifForm) : nifsem v (norm p) = ifsem v p.
 Proof.
-...
-Qed.
+Admitted.
+
 
 (* -------------------------------------------------------------------- *)
 (* Finally, we provide a procedure that decides if a normalized         *
@@ -269,7 +286,8 @@ Lemma nifForm_tauto_r_correct (xv : nat -> option bool) (p : nifForm) :
   -> forall v, (forall x b, xv x = Some b -> v x = b)
        -> nifsem v p = true.
 Proof.
-...
+elim p; simpl; auto. 
+intuition. 
 Qed.
 
 (* -------------------------------------------------------------------- *)
